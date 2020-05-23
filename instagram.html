@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chatアプリ</title>
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+
+
+<!-- ログイン画面 -->
+<!-- <div id="login-container">
+    <div>
+      メールアドレス<input id="mailAddress" type="mailAddress" required/>
+    </div>
+    <div>
+      パスワード<input id="password" type="password" required/>
+    </div>
+      <button id="login">ログイン</button>
+      <button id="register">新規登録</button>
+</div> -->
+
+
+<!-- ブラウザの画面に見える内容 -->
+<div class="wrapper">
+
+  <!-- ページの一番上のヘッダー -->
+  <div class="header">My Favorite Painting</div>
+  <!-- <button id="logout">ログアウト</button> -->
+ 
+  <!-- ページの一番下のフッター -->
+  <div class="hooter">
+    <!-- 名前を登録する画面を表示するボタン -->
+      <div class="footer-box">
+        <button id="remove-button">全て削除</button>
+      </div>
+    <!-- 投稿内容を入力する画面を表示するボタン -->
+      <div class="footer-box">
+        <button id="main-button">＋</button>
+      </div>
+    <!-- 投稿内容一覧を表示するボタン -->
+      <div class="footer-box">
+        <button id="list-button">投稿一覧</button>
+      </div>
+  </div>
+
+  <!-- 画像選択画面 -->
+  <div id="img-select-container" style="display: none;">
+    <div class="upper-box">
+        <!-- 選択した画像のプレビュー  -->
+        <div class="selected-img">
+            <p>選択した画像</p>
+            <div class="preview-box"></div>
+          </div>
+          <div class="right-box">
+            <p id="img-select-close">✖️</p> 
+            <button id="next-button" style="display: none;">次へ進む</button>
+        </div>
+    </div>
+    
+    <div class="img-list">
+      <img src="img/birth.jpg" data-img="0" class="icon">
+      <img src="img/newlife.jpg" data-img="1" class="icon">
+      <img src="img/firstsnow.jpg" data-img="2" class="icon">
+
+      <img src="img/leaf1.jpg" data-img="3" class="icon">
+      <img src="img/leaf2.jpg" data-img="4" class="icon">
+      <img src="img/leaf3.jpg" data-img="5" class="icon">
+      <img src="img/leaf4.jpg" data-img="6" class="icon">
+
+        <!-- <img src='imgs/buke.png' data-img="0" class='icon'>
+        <img src='imgs/tuku.jpg' data-img="1" class='icon'>
+        <img src='imgs/caram.png' data-img="2" class='icon'> -->
+</div>
+    
+  </div>
+
+    <!-- ここからキャプションを入力して投稿する画面 -->
+    <div id="post-container" style="display: none;">
+ 
+      <!-- 左側、選択した画像のプレビュー -->
+      <div class="post-img-container">
+          <p>選択中の画像</p>
+          <div class="post-img"></div>
+      </div>
+
+      <!-- 右側、投稿ボタン・名前・キャプション入力欄 -->
+      <div class="post-text-container">
+          <p id="post-container-close">✖️</p> 
+          <button id="send-button">▲ 投稿する</button>
+          <div class="name-container">
+            <p>名前： </p>
+            <input type="text" id="username">
+          </div>
+          <!-- </div> -->
+          <!-- <select name="sender" id="">
+            <option value="sender1" class="sendername">選択して下さい</option> 
+            <option value="sender2" class="sendername">吉本郁作</option>
+            <option value="sender3" class="sendername">相手</option>
+          </select> -->
+          <div class="textarea-container">
+            <textarea name="" id="text" cols="30" rows="10" placeholder="Aa"></textarea>
+          </div>
+      </div>
+      <!-- ここまで右側、投稿ボタン・名前・キャプション入力欄 -->
+
+    </div>
+    <!-- ここまでキャプションを入力して投稿する画面 -->
+
+  
+  <!-- 保存したデータが表示されるブロック -->
+  <div class="output-container" style="overflow: scroll;">
+    <div id="output"></div>
+  </div>　　　　
+
+
+  <!-- JQuery -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+  <!--** 以下Firebase **-->
+  <!-- The core Firebase JS SDK is always required and must be listed first -->
+  <!-- ここにfirebaseのscriptを貼り付ける -->
+  <script src="https://www.gstatic.com/firebasejs/7.14.3/firebase.js"></script>
+
+
+  <script>
+    // Your web app's Firebase configuration
+    // 公開してはいけない部分
+    var firebaseConfig = {
+    apiKey: "AIzaSyBu019TuA61RFcGUH_mWEB4mEWP-q3Grbc",
+    authDomain: "devchat-94f26.firebaseapp.com",
+    databaseURL: "https://devchat-94f26.firebaseio.com",
+    projectId: "devchat-94f26",
+    storageBucket: "devchat-94f26.appspot.com",
+    messagingSenderId: "856115020378",
+    appId: "1:856115020378:web:5a35810029a60bbcabce63"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+
+    //firebaseのデーターベース（保存させる場所）を使いますよと言うjsのコードを貼り付ける
+    const newPostRef = firebase.database().ref();
+
+
+// ここから下にjqueryの処理を書いていく
+
+//   // 新規アカウント登録
+//   register.addEventListener('click', function(e) {
+//     var mailAddress = document.getElementById('mailAddress').value;
+//     var password = document.getElementById('password').value;
+    
+//     firebase.auth().createUserWithEmailAndPassword(mailAddress, password)
+//     .catch(function(error) {
+//       alert('登録できません（' + error.message + '）');
+//     });
+//   });
+
+//   //ログイン処理
+//   login.addEventListener('click', function(e) {
+//     var mailAddress = document.getElementById('mailAddress').value;
+//     var password = document.getElementById('password').value;
+
+//     $("#login-container").addClass("hidden");
+//     $(".wrapper").removeClass("hidden");
+    
+    
+//     firebase.auth().signInWithEmailAndPassword(mailAddress, password).catch(function(error) {
+//       alert('ログインできません（' + error.message + '）');
+//     });
+//   });
+
+
+//   //認証状態の確認
+//   firebase.auth().onAuthStateChanged(function(user) {
+//     if(user) {
+//       //ログイン状態
+//       alert("ログインに成功しました");
+//     }else{
+//       //ログアウト状態
+//     }
+//   });
+
+
+// // ログアウト
+
+// $("#logout").on("click", function () {
+  
+// firebase.auth().signOut().then(function() {
+//   // Sign-out successful.
+//   $(".wrapper").addClass("hidden");
+//   $("#login-container").removeClass("hidden");
+// }).catch(function(error) {
+//   // An error happened.
+// });
+// });
+
+
+
+// メインボタンのクリックイベント
+$("#main-button").on("click", function () {
+
+  $("#post-container").hide(); //キャプション入力画面を閉じる
+  $("#img-select-container").fadeIn(); //画像選択画面が表示される
+
+});
+
+// 閉じるボタンのクリックイベント
+$("#img-select-close").on("click", function () {
+  
+  $(".preview-box").empty(); //画像のプレビューを削除する
+  $(".post-img").empty(); //画像のプレビューを削除する
+  
+  $("#next-button").hide(); //「次へ進む」ボタンを非表示にする
+
+  $("#img-select-container").hide(); //画像選択画面を閉じる
+
+});
+
+// 画像のファイル名を配列にする
+const imgArray = [
+  "birth.jpg",
+  "newlife.jpg",
+  "firstsnow.jpg",
+  "leaf1.jpg",
+  "leaf2.jpg",
+  "leaf3.jpg",
+  "leaf4.jpg"
+];
+
+// 画像のデータ属性の番号を格納する変数を宣言する
+let imgNum = 0;
+
+// 画像がクリックされたら以下の処理をする
+$(".icon").on("click", function(){
+  console.log(this); //どれをクリックしたか確認
+
+  //attr()を使ってデータ属性の番号を取得して変数 imgNum に格納する
+  imgNum = $(this).attr("data-img")
+
+  //コンソールで確認する
+  console.log("クリックしたスタンプ画像のデータ属性の番号は", imgNum);
+
+  // 選択した画像をプレビュー
+  $(".preview-box").html(`<img class="preview-img" src="img/${imgArray[imgNum]}">`);
+  // 選択した画像をキャプション入力画面でもプレビュー
+  $(".post-img").html(`<img class="preview-img" src="img/${imgArray[imgNum]}">`);
+
+  // 「次へ進む」ボタンを表示する
+      $("#next-button").fadeIn();
+
+});
+
+// 次へ進むボタンがクリックされたら次の処理をする
+$("#next-button").on("click", function () {
+
+  //「次へ進む」ボタンを非表示にする
+  $("#next-button").hide();
+      
+  // 画像選択画面を非表示にする
+  $("#img-select-container").hide();
+
+  // キャプション入力画面を表示する
+  $("#post-container").fadeIn();
+
+});
+
+// 閉じるボタンのクリックイベント
+$("#post-container-close").on("click", function () {
+
+  $(".preview-box").empty(); //画像のプレビューを削除する
+  $(".post-img").empty(); //画像のプレビューを削除する
+     
+  $("#post-container").hide(); //キャプション入力画面を閉じる
+});
+
+
+// 送信ボタンがクリックされたら次の処理をする
+$("#send-button").on("click", function () {
+  
+function sendButtonClick (){ //送信処理の関数
+  
+  alert("投稿されました！");
+
+  var v = $("#username").val();
+  console.log("名前欄は", v); 
+
+  // 送信日時の取得
+  var today = new Date();
+  var year = today.getFullYear();
+  var month = today.getMonth() + 1;
+  var day = today.getDate();
+  var hour = today.getHours();
+  var minute = today.getMinutes();
+  hour = ("0" + hour).slice(-2);
+  minute = ("0" + minute).slice(-2);
+  
+  // 送信日時を定数 date に格納
+  const sendDate = `${year}/${month}/${day}　${hour}:${minute}`;
+
+  // .pushでオブジェクトデータにして送る
+  newPostRef.push({
+    username: $("#username").val(), // 名前
+    icon: imgNum, // 選択した画像
+    text: $("#text").val(),　// キャプション欄に入力したテキスト
+    date: sendDate //送信日時
+  });
+
+  $(".preview-box").empty(); //画像のプレビューを削除する
+  $(".post-img").empty(); //画像のプレビューを削除する
+
+  $("#post-container").fadeOut(); //キャプション入力画面を非表示にする
+
+  $("#username").val(""); //テキストを空にする
+  $("#text").val(""); //テキストを空にする
+
+}
+
+  sendButtonClick(); //関数の実行
+
+});
+
+// 受信処理
+newPostRef.on("child_added", function (data) {
+  let v = data.val(); //この変数に保存されたデータが全て入ってくる
+  let k = data.key; //特定のデータを削除したりする場合に使用する
+
+  console.log("次のデータを受信　key: " + k ); 
+  // alert("次のデータを受信　key: " + k );
+
+  console.log("受信したデータ: ", v); //変数 v に入っているオブジェクトを確認する
+
+  let strName = `<p class="output-name">${v.username}</p>`; 
+  let strImg = `<img class="output-img" src="img/${imgArray[v.icon]}">`; 
+  let strText = `<p class="output-text" >${v.text}</p>`; 
+  let strDate = `<p class="output-date" >${v.date}</p>`; 
+
+  // 取得したデータをhtmlのid=output部分に埋め込む
+  $("#output").prepend(strDate);
+  $("#output").prepend(strText);
+  $("#output").prepend(strImg);
+  $("#output").prepend(strName);
+
+  // 一番上までスクロールさせる関数
+  function scrollToTop (){
+  scrollTo(0,0);
+  }
+
+  scrollToTop(); //関数の実行
+
+});
+
+
+// 押したキーのキーコードを確認する
+$("#text").on("keydown", function (e) { // e は event の意味
+console.log(e) //function(e)の[e]の情報をみています
+
+// eの中の[keyCode]の数字が13の時に送信イベントを発動させる
+if (e.keyCode === 13) {
+  // alert("エンターキーによる送信がなぜかエラーになります・・・");
+  sendButtonClick(); // 送信ボタンをクリックした際の処理
+}
+  
+});
+
+
+// 削除機能を追加
+$("#remove-button").on("click", function () {
+
+  alert('削除機能を実装できませんでした・・・');
+
+    // 特定のデータのみ削除しようとしたが、削除されず・・・  
+    // database.ref("-M7IM3diICXpc7Dg8bo1").remove();
+
+    // これでも削除されず・・・
+    // newPostRef.on("child_removed", function (data) {
+    // });
+
+    // firebace.remove();
+
+    // newPostRef.on("child_removed", function (data) {
+    newPostRef.child_removed(function (data) {
+
+  // document.getElementById('remove-button').addEventListener('click', function() {
+  // firebase.database().ref("date").remove().then(function(){
+  
+  // });
+  });
+
+    // let k = data.key; 
+
+  });
+
+
+  </script>
+</body>
+
+</html>
